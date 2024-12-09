@@ -1,8 +1,8 @@
-﻿using ExerciseTracker.jollejonas.Repositories;
-using ExerciseTracker.jollejonas.Models;
+﻿using ExerciseTracker.jollejonas.Models;
+using ExerciseTracker.jollejonas.Repositories;
 using ExerciseTracker.jollejonas.UserInput;
 public class ExerciseService
-    {
+{
     private readonly IExerciseRepository _exercieseRepository;
     private readonly IUserInput _userInput;
 
@@ -24,18 +24,48 @@ public class ExerciseService
 
         exercise.Comments = _userInput.GetExerciseComments();
 
-        _exercieseRepository.AddExercise(exercise);
+        try
+        {
+
+            _exercieseRepository.AddExercise(exercise);
+
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e.Message);
+        }
     }
 
     public void DeleteExercise()
     {
         Exercise selectedExercise = _userInput.GetExercise(_exercieseRepository.GetAllExercises());
-        _exercieseRepository.DeleteExercise(selectedExercise);
+        try
+        {
+            _exercieseRepository.DeleteExercise(selectedExercise);
+
+        }
+
+        catch (Exception e)
+        {
+            Console.WriteLine(e.Message);
+        }
     }
 
     public List<Exercise> GetAllExercises()
     {
-        return _exercieseRepository.GetAllExercises();
+        try
+        {
+            foreach (var exercise in _exercieseRepository.GetAllExercises())
+            {
+                Console.WriteLine($"{exercise.DateStart} - {exercise.DateEnd} - {exercise.Duration} - {exercise.Comments}");
+            }
+            return _exercieseRepository.GetAllExercises();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e.Message);
+            return null;
+        }
     }
 
     public void UpdateExercise()
@@ -48,41 +78,37 @@ public class ExerciseService
             return;
         }
 
-        var oldExercise = _exercieseRepository.GetExerciseById(selectedExercise.Id);
+        var exercise = _exercieseRepository.GetExerciseById(selectedExercise.Id);
 
         Exercise updatedExercise = new Exercise();
 
         if (_userInput.GetConfirmation("Do you want to update the start time? (y/n)"))
         {
             Console.WriteLine("Start time: ");
-            updatedExercise.DateStart = _userInput.GetDateTime();
+            exercise.DateStart = _userInput.GetDateTime();
         }
-        else
-        {
-            updatedExercise.DateStart = oldExercise.DateStart;
-        }
-        if(_userInput.GetConfirmation("Do you want to update the end time? (y/n)"))
+        if (_userInput.GetConfirmation("Do you want to update the end time? (y/n)"))
         {
             Console.WriteLine("End time: ");
-            updatedExercise.DateEnd = _userInput.GetDateTime();
-            updatedExercise.Duration = CalculateDuration(updatedExercise.DateStart, updatedExercise.DateEnd);
-        }
-        else
-        {
-            updatedExercise.DateEnd = oldExercise.DateEnd;
-            updatedExercise.Duration = CalculateDuration(updatedExercise.DateStart, updatedExercise.DateEnd);
+            exercise.DateEnd = _userInput.GetDateTime();
+            exercise.Duration = CalculateDuration(exercise.DateStart, exercise.DateEnd);
         }
 
         if (_userInput.GetConfirmation("Do you want to update the comments? (y/n)"))
         {
-            updatedExercise.Comments = _userInput.GetExerciseComments();
-        }
-        else
-        {
-            updatedExercise.Comments = oldExercise.Comments;
+            exercise.Comments = _userInput.GetExerciseComments();
         }
 
-        _exercieseRepository.UpdateExercise(updatedExercise);
+        try
+        {
+
+            _exercieseRepository.UpdateExercise(exercise);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e.Message);
+        }
+
     }
 
     public TimeSpan CalculateDuration(DateTime dateStart, DateTime dateEnd)

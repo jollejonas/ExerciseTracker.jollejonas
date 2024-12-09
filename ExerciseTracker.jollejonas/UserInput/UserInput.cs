@@ -1,6 +1,6 @@
-﻿using Spectre.Console;
-using ExerciseTracker.jollejonas.Enums;
+﻿using ExerciseTracker.jollejonas.Enums;
 using ExerciseTracker.jollejonas.Models;
+using Spectre.Console;
 
 
 namespace ExerciseTracker.jollejonas.UserInput;
@@ -39,12 +39,30 @@ public class UserInput : IUserInput
 
     public Exercise GetExercise(List<Exercise> exercises)
     {
+        var cancelOption = new Exercise
+        {
+            DateStart = DateTime.MinValue,
+            DateEnd = DateTime.MinValue,
+            Duration = TimeSpan.Zero,
+            Comments = "Cancel"
+        };
 
-        return AnsiConsole.Prompt(
+        exercises.Add(cancelOption);
+
+        var selectedExercise = AnsiConsole.Prompt(
             new SelectionPrompt<Exercise>()
                 .Title("Select an exercise")
                 .AddChoices(exercises)
+                .UseConverter(exercises => $"{exercises.DateStart} - {exercises.DateEnd} - {exercises.Duration} - {exercises.Comments}")
                 );
+
+        if (selectedExercise == cancelOption)
+        {
+            Console.WriteLine("Canceled");
+            return null;
+        }
+
+        return selectedExercise;
     }
 
     public bool GetConfirmation(string message)
